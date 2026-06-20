@@ -16,5 +16,12 @@ await initializeDropin(async () => {
   };
 
   // Initialize search
-  return initializers.mountImmediately(initialize, { langDefinitions });
+  return initializers.mountImmediately(initialize, {
+    langDefinitions,
+    models: {
+      Product: {
+        transformer: (rawProduct) => ({ badges: rawProduct?.badges ?? [] }),
+      },
+    },
+  });
 })();

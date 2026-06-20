@@ -153,6 +153,33 @@ export default async function decorate(block) {
           const anchorWrapper = document.createElement('a');
           anchorWrapper.href = getProductLink(product.urlKey, product.sku);
 
+          // Intercept ctx.replaceWith so we can wrap the image anchor in our own
+          // container div before it enters the slot. Preact owns anchorWrapper's
+          // children (the image) but never owns imageWrapper, so the badge div
+          // appended to imageWrapper survives all Preact reconciliation passes.
+          const imageWrapper = document.createElement('div');
+          imageWrapper.className = 'product-discovery-product-image-wrapper';
+
+          const originalReplaceWith = ctx.replaceWith.bind(ctx);
+          ctx.replaceWith = (element) => {
+            imageWrapper.appendChild(element);
+
+            const badges = product.badges ?? [];
+            if (badges.length) {
+              const badgeContainer = document.createElement('div');
+              badgeContainer.className = 'product-badge-container';
+              badges.forEach((label, index) => {
+                const badge = document.createElement('span');
+                badge.className = `product-badge product-badge--${(index % 10) + 1}`;
+                badge.textContent = label;
+                badgeContainer.appendChild(badge);
+              });
+              imageWrapper.appendChild(badgeContainer);
+            }
+
+            originalReplaceWith(imageWrapper);
+          };
+
           tryRenderAemAssetsImage(ctx, {
             alias: product.sku,
             imageProps: defaultImageProps,

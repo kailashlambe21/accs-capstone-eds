@@ -16,14 +16,32 @@ overrideGQLOperations([
   //   npm: '@dropins/storefront-checkout',
   //   operations: [],
   // },
-  // {
-  //   npm: '@dropins/storefront-pdp',
-  //   operations: [
-  //     `
-  //     fragment PRODUCT_FRAGMENT on ProductView {
-  //       lowStock
-  //     }
-  //     `,
-  //   ],
-  // },
+  {
+    npm: '@dropins/storefront-pdp',
+    operations: [
+      `fragment PRODUCT_FRAGMENT on ProductView {
+        ... on SimpleProductView {
+          badges
+        }
+        ... on ComplexProductView {
+          badges
+        }
+      }`,
+    ],
+  },
+  {
+    npm: '@dropins/storefront-product-discovery',
+    operations: [
+      `fragment ProductView on ProductSearchItem {
+        productView {
+          ... on SimpleProductView {
+            badges
+          }
+          ... on ComplexProductView {
+            badges
+          }
+        }
+      }`,
+    ],
+  },
 ]);

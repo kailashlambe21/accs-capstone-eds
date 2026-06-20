@@ -102,6 +102,7 @@ await initializeDropin(async () => {
   const models = {
     ProductDetails: {
       initialData: { ...product },
+      transformer: (rawProduct) => ({ badges: rawProduct?.badges ?? [] }),
     },
   };
 

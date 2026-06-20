@@ -107,6 +107,7 @@ export default async function decorate(block) {
       </div>
       <div class="product-details__right-column">
         <div class="product-details__header"></div>
+        <div class="product-details__badges"></div>
         <div class="product-details__price"></div>
         <div class="product-details__gallery"></div>
         <div class="product-details__short-description"></div>
@@ -128,6 +129,7 @@ export default async function decorate(block) {
   const $alert = fragment.querySelector('.product-details__alert');
   const $gallery = fragment.querySelector('.product-details__gallery');
   const $header = fragment.querySelector('.product-details__header');
+  const $badges = fragment.querySelector('.product-details__badges');
   const $price = fragment.querySelector('.product-details__price');
   const $galleryMobile = fragment.querySelector('.product-details__right-column .product-details__gallery');
   const $shortDescription = fragment.querySelector('.product-details__short-description');
@@ -140,6 +142,14 @@ export default async function decorate(block) {
   const $attributes = fragment.querySelector('.product-details__attributes');
 
   block.replaceChildren(fragment);
+
+  // Render product badges between title and price
+  (product?.badges ?? []).forEach((label, index) => {
+    const badge = document.createElement('span');
+    badge.className = `product-badge product-badge--${(index % 10) + 1}`;
+    badge.textContent = label;
+    $badges.appendChild(badge);
+  });
 
   const gallerySlots = {
     CarouselThumbnail: (ctx) => {
