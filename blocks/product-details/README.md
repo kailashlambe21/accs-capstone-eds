@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Product Details block provides comprehensive product detail page functionality using multiple @dropins/storefront-pdp containers. It handles product display, configuration, cart operations, wishlist integration, and SEO optimization with dynamic mode switching between add and update operations.
+The Product Details block provides comprehensive product detail page functionality using multiple @dropins/storefront-pdp containers. It handles product display, configuration, cart operations, wishlist integration, and SEO optimization with dynamic mode switching between add and update operations. It also displays product badges (e.g. "On Sale", "Low Stock") as colored pill labels between the product title and price.
 
 ## Integration
 
@@ -18,6 +18,21 @@ No block configuration is read via `readBlockConfig()`. The block uses dynamic p
 <!-- ### Local Storage
 
 No localStorage keys are used by this block. -->
+
+### Product Badges
+
+Badges are strings exposed at the root of the product response by the API mesh (e.g. `["Low Stock", "On Sale"]`). They are passed through the PDP dropin's model transformer in `scripts/initializers/pdp.js`:
+
+```js
+models: {
+  ProductDetails: {
+    initialData: { ...product },
+    transformer: (rawProduct) => ({ badges: rawProduct?.badges ?? [] }),
+  },
+}
+```
+
+The block reads `product.badges` from the `pdp/data` event payload and renders each badge as a `<span class="product-badge product-badge--N">` inside `.product-details__badges`, which sits between `.product-details__header` and `.product-details__price`. Up to 10 color classes (`product-badge--1` through `product-badge--10`) cycle by index. If no badges exist the container is hidden via `:empty { display: none }`.
 
 ### Events
 
@@ -46,7 +61,7 @@ No events are emitted by this block. -->
 
 ### User Interaction Flows
 
-1. **Initialization**: Block renders product gallery, header, price, options, quantity, and action buttons
+1. **Initialization**: Block renders product gallery, header, badges, price, options, quantity, and action buttons
 2. **Product Configuration**: Users can select product options with real-time validation
 3. **Add to Cart**: Users can add products to cart or update existing cart items
 4. **Wishlist Management**: Users can add/remove products from wishlist

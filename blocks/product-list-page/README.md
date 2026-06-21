@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Product List Page block powers search and category listing pages using the storefront-product-discovery dropin. It renders faceted search results with sort, filters, pagination, product cards (with add-to-cart and wishlist), and keeps the URL in sync with search state. The block supports two modes: **search page** (full-text search with optional filters) and **category page** (products in a category, optionally filtered).
+The Product List Page block powers search and category listing pages using the storefront-product-discovery dropin. It renders faceted search results with sort, filters, pagination, product cards (with add-to-cart and wishlist), and keeps the URL in sync with search state. The block supports two modes: **search page** (full-text search with optional filters) and **category page** (products in a category, optionally filtered). Product badges are rendered as colored pill overlays on the top-left corner of each product image.
 
 ## Configuration Options
 
@@ -37,6 +37,25 @@ On load, the block normalizes the URL (e.g. filter format) with `replaceState`. 
 
 The block does not emit events; it calls the dropin’s `search()` API and reacts to `search/result`.
 
+### Product Badges
+
+Badges are strings at the root of each product returned by the API mesh (e.g. `["On Sale", "Low Stock"]`). They are wired through two layers:
+
+1. **GraphQL fragment** (`build.mjs`): `badges` is requested inside `... on SimpleProductView` and `... on ComplexProductView` inline fragments nested within `productView {}` on `ProductSearchItem`.
+2. **Model transformer** (`scripts/initializers/search.js`): The discovery dropin's internal transformer whitelists only known fields, so `badges` must be rescued explicitly:
+
+```js
+models: {
+  Product: {
+    transformer: (rawProduct) => ({ badges: rawProduct?.badges ?? [] }),
+  },
+}
+```
+
+The `ProductImage` slot intercepts `ctx.replaceWith` before calling `tryRenderAemAssetsImage`. When the image is ready the interceptor wraps it in an unmanaged `div.product-discovery-product-image-wrapper`, appends a `div.product-badge-container` with one `span.product-badge.product-badge--N` per badge (N = 1–10, cycling by index), then calls the original `replaceWith` with the wrapper. The wrapper div is not owned by Preact, so badge DOM nodes survive all reconciliation passes.
+
+Up to 10 color classes (`product-badge--1` through `product-badge--10`) are defined. If a product has no badges the container is not created.
+
 ### Local Storage
 
 This block does not use localStorage.
@@ -52,7 +71,7 @@ A visibility filter `{ attribute: 'visibility', in: ['Search', 'Catalog, Search'
 
 ### User Interaction Flows
 
-1. **Initial load**: Block reads URL via `getSearchStateFromUrl`, normalizes the URL, then calls `search()` with phrase, page, sort, and filter (including visibility and, on category pages, categoryPath).
+1. **Initial load**: Block reads URL via `getSearchStateFromUrl`, normalizes the URL, then calls `search()` with phrase, page, sort, and filter (including visibility and, on category pages, categoryPath). Product images are rendered with badge overlays via the `ProductImage` slot.
 2. **Sort change**: User changes sort via SortBy; dropin calls `search()` with updated sort; block receives `search/result` and updates the URL.
 3. **Filter change**: User toggles facets; dropin calls `search()` with updated filter; block updates result count and URL.
 4. **Pagination**: User changes page; dropin calls `search()` with new page; block scrolls to top and URL is updated.
