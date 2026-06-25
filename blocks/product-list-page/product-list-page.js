@@ -19,7 +19,7 @@ import { readBlockConfig } from '../../scripts/aem.js';
 import { fetchPlaceholders, getProductLink } from '../../scripts/commerce.js';
 import { getSearchStateFromUrl, applySearchStateToUrl } from './search-url.js';
 
-// Initializers
+//Initializers
 import '../../scripts/initializers/search.js';
 import '../../scripts/initializers/wishlist.js';
 
